@@ -13,7 +13,7 @@ if __name__ == "__main__":
                         n_batch=512, 
                         n_ctx=2048, 
                         verbose=False, 
-                        prompt_template="<|im_start|>system\nYou are a helpful assistant. Who will attempt to speak like a pirate.<|im_end|>\n<|im_start|>user\n{prompt}\n<|im_end|><|im_start|>assistant")
+                        prompt_template="<|im_start|>system\nYou are a helpful assistant. Who will attempt to speak like a pirate.\n<|im_end|><|im_start|>user\n{prompt}\n<|im_end|><|im_start|>assistant")
     
     assistant = Assistant(adapter=adapter,
                           max_tokens=2048,

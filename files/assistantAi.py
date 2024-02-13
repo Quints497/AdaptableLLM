@@ -105,7 +105,7 @@ class Assistant:
         while True:
             prompt = input("User: ")
 
-            if prompt.lower() == "exit":
+            if prompt.lower() in ["exit", "goodbye"]:
                 print("Assistant: Goodbye!")
                 self.logger.info("Chat ended.")
                 break
