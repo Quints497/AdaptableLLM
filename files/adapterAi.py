@@ -2,7 +2,7 @@ from abstractAi import LLMAdapter
 from llama_cpp import Llama
 import logging
 
-class YiAdapter(LLMAdapter):
+class Adapter(LLMAdapter):
     def __init__(self, model_path, n_gpu_layers, n_batch, n_ctx, verbose, prompt_template):
         """
         Initializes an instance of the YiAdapter class.
@@ -21,7 +21,7 @@ class YiAdapter(LLMAdapter):
         self.llm = Llama(model_path=model_path, n_gpu_layers=n_gpu_layers, n_batch=n_batch, n_ctx=n_ctx, verbose=verbose)
         self.prompt_template = prompt_template
         self.generating = False
-        self.__name__ = "YiAdapter"
+        self.__name__ = "LLM-Adapter"
         self.init_logging()
 
     def init_logging(self):
@@ -34,7 +34,7 @@ class YiAdapter(LLMAdapter):
         Returns:
             None
         """
-        self.logger = logging.getLogger("YiLogger")
+        self.logger = logging.getLogger("LLM-Adapter-Logger")
         self.logger.setLevel(logging.INFO)
         handler = logging.FileHandler(f"{__name__}-{self.__name__}.log")
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")

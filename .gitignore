@@ -1,3 +1,4 @@
-/config.env
-/assistantAi-Assistant.log
-/adapterAi-YiAdapter.log
+config.env
+assistantAi-Assistant.log
+adapterAi-YiAdapter.log
+adapterAi-LLM-Adapter.log

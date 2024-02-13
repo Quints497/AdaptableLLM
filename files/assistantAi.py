@@ -1,5 +1,7 @@
-import logging
 from abstractAi import LLMAdapter
+from datetime import datetime
+import logging
+
 
 class Assistant:
     """
@@ -37,14 +39,14 @@ class Assistant:
             "stop": stop
         }
         self.history = []
-        self.__name__ = "Assistant"
+        self.__name__ = "LLM-Assistant"
         self.init_logging()
 
     def init_logging(self):
         """
         Initializes the logging configuration for the Assistant.
         """
-        self.logger = logging.getLogger("AssistantLogger")
+        self.logger = logging.getLogger("LLM-Assistant-Logger")
         self.logger.setLevel(logging.INFO)
         handler = logging.FileHandler(f"{__name__}-{self.__name__}.log")
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
@@ -98,18 +100,19 @@ class Assistant:
         print()
         self.gather_statistics({"prompt": prompt, "output": output})
 
-    def chat(self):
+    def start_chat(self):
         """
         Starts the chat interaction loop.
         """
         while True:
-            prompt = input("User: ")
+
+            prompt = input(f"{datetime.now().strftime('%H:%M:%S')} - User: ")
 
             if prompt.lower() in ["exit", "goodbye"]:
                 print("Assistant: Goodbye!")
                 self.logger.info("Chat ended.")
                 break
             
-            print("Assistant: ", end="")
+            print(f"{datetime.now().strftime('%H:%M:%S')} - Assistant: ", end="")
             self.handle_user_input(prompt=prompt)
 
