@@ -2,3 +2,4 @@ config.env
 assistantAi-Assistant.log
 adapterAi-YiAdapter.log
 adapterAi-LLM-Adapter.log
+src/__pycache__

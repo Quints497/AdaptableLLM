@@ -1,7 +1,8 @@
-from adapterAi import Adapter
-from assistantAi import Assistant
+from src.adapter import Adapter
+from src.assistant import Assistant
 from dotenv import load_dotenv
 import os
+
 
 if __name__ == "__main__":
     load_dotenv('config.env')
