@@ -35,6 +35,7 @@ class Assistant:
             "stream": stream,
             "stop": stop
         }
+        self.system_message = "Answer the prompt only using the information provided in the context. \nDo not add any additional information. \nIf you CANNOT answer using ONLY the context, respond with 'I don't know'<|im_end|>"
         self.history = []
         self.__name__ = "Assistant"
         self.init_logging()
@@ -54,6 +55,10 @@ class Assistant:
         if not self.logger.hasHandlers():
             self.logger.addHandler(handler)
 
+    def update_system_message(self, message: str):
+        # Update the system message for the assistant
+        self.system_message = message
+
     def gather_statistics(self, messages: dict):
         """
         Logs user and assistant messages to the logger and updates the chat history.
@@ -65,7 +70,7 @@ class Assistant:
         self.logger.info(f"Assistant: {messages['output']}")
         self.history.append(messages)
 
-    def generate_response_from_prompt(self, prompt: str):
+    def generate_response_from_prompt(self, context: str, prompt: str):
         """
         Generates a response for a given user prompt using the adapter.
 
@@ -75,11 +80,11 @@ class Assistant:
         Returns:
             list: Generated responses.
         """
-        formatted_prompt = self.adapter.prompt_format(prompt)
-        output = self.adapter.invoke(formatted_prompt, **self.parameters)
-        return self.adapter.parse_response(output)
+        formatted_prompt = self.adapter.prompt_format(system_message=self.system_message, context=context, prompt=prompt)
+        output = self.adapter.invoke(prompt=formatted_prompt, **self.parameters)
+        return self.adapter.parse_response(output=output)
 
-    def handle_user_input(self, prompt: str):
+    def handle_input(self, prompt: str):
         """
         Processes user input by generating a response, printing it, and logging the interaction.
 
@@ -114,4 +119,4 @@ class Assistant:
                 break
 
             print(f"{self.timestamp()} - Assistant: ", end="")
-            self.handle_user_input(prompt=prompt)
+            self.handle_input(prompt=prompt)

@@ -47,16 +47,16 @@ class Adapter(BaseAdapter):
         if not self.logger.hasHandlers():
             self.logger.addHandler(handler)
 
-    def invoke(self, prompt: str, **parameters) -> str:
+    def invoke(self, prompt: str, **parameters):
         """
         Generates a response from the Llama model based on the input prompt and additional parameters.
 
         Args:
             prompt (str): Input prompt for the model.
-            **parameters: Variable keyword arguments for model configuration.
+            **parameters: Model parameters.
 
         Returns:
-            str: The generated response from the model.
+            Generator: The generated response from the model.
         """
         self.generating = True
         self.logger.info(f"Generating: {self.generating}")
@@ -65,7 +65,7 @@ class Adapter(BaseAdapter):
         self.logger.info(f"Generating: {self.generating}")
         return output
 
-    def prompt_format(self, prompt: str) -> str:
+    def prompt_format(self, system_message: str, context: str, prompt: str) -> str:
         """
         Formats the input prompt using the predefined template.
 
@@ -75,7 +75,7 @@ class Adapter(BaseAdapter):
         Returns:
             str: Formatted prompt ready for model processing.
         """
-        return self.prompt_template.format(prompt=prompt)
+        return self.prompt_template.format(system_message=system_message, context=context, prompt=prompt)
 
     def parse_response(self, output):
         """
