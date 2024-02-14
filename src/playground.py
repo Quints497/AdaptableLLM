@@ -1,22 +1,24 @@
-from src.adapter import Adapter
-from src.assistant import Assistant
+from adapter import Adapter
+from assistant import Assistant
 from rag_assistant import RagAssistant
 
 from dotenv import load_dotenv
 import os
 
 
+
 if __name__ == "__main__":
     load_dotenv('config.env')
     yi_model_path = os.getenv("YI_MODEL_PATH")
     mixtral_model_path = os.getenv("MIXTRAL_MODEL_PATH")
-    mistral_model_path = os.getenv("MISTRAL_MODEL_PATH")
+    # mistral_model_path = os.getenv("MISTRAL_MODEL_PATH")
+    mistral_model_path = "mistral-7b-instruct-v0.2.Q6_K.gguf"
     
     prompt_template = "<|im_start|>system\n{system_message}\n<|im_end|><|im_start|>user\nContext: {context}\n Prompt: {prompt}\n<|im_end|><|im_start|>assistant"
     
 
     mistral_adapter = Adapter(model_path=mistral_model_path, 
-                        n_gpu_layers=-1, 
+                        n_gpu_layers=0, 
                         n_batch=512, 
                         n_ctx=4096, 
                         verbose=False, 
@@ -35,8 +37,16 @@ if __name__ == "__main__":
                         chunk_size=1024, 
                         chunk_overlap=0)
     
-    rag_assistant.add_document("/Users/om/Documents/AdaptableLLM/J. K. Rowling - Harry Potter 1 - Sorcerer's Stone.txt")
+    # rag_assistant.add_document("shakespeare.txt")
     rag_assistant.start_rag_chat()
+
+
+
+    # query = "When forty winters shall"
+    # results = rag_assistant.query_vectorstore(query, 10)
+    # rag_assistant.format_documents(results)
+    # print(rag_assistant.rerank(query, results))
+
 
     # yi_adapter = Adapter(model_path=yi_model_path, 
     #                     n_gpu_layers=-1, 

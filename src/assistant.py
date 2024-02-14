@@ -1,6 +1,6 @@
 from datetime import datetime
 import logging
-from src.adapter import Adapter
+from adapter import Adapter
 
 
 class Assistant:
@@ -15,7 +15,14 @@ class Assistant:
         logger (logging.Logger): Logger for interaction logging.
     """
 
-    def __init__(self, adapter: Adapter, max_tokens: int, temperature: float, top_p: float, stream: bool, stop: list) -> None:
+    def __init__(self, 
+                 adapter: Adapter = None, 
+                 max_tokens: int = 1024, 
+                 temperature: float = 0.5,
+                 top_k: int = 10,
+                 top_p: float = 0.1, 
+                 stream: bool = True, 
+                 stop: list = ["<|im_end|>"]) -> None:
         """
         Initializes the Assistant with a response generation adapter and configuration parameters.
 
@@ -31,11 +38,12 @@ class Assistant:
         self.parameters = {
             "max_tokens": max_tokens,
             "temperature": temperature,
+            "top_k": top_k,
             "top_p": top_p,
             "stream": stream,
             "stop": stop
         }
-        self.system_message = "Answer the prompt only using the information provided in the context. \nDo not add any additional information. \nIf you CANNOT answer using ONLY the context, respond with 'I don't know'<|im_end|>"
+        self.system_message = "Answer the prompt ONLY using the information provided in the context. \nNEVER repeat any information in the prompt. \nIf you CANNOT answer using ONLY the context, respond ONLY with 'I don't know'"
         self.history = []
         self.__name__ = "Assistant"
         self.init_logging()

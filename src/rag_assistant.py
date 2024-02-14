@@ -3,7 +3,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
-
+from FlagEmbedding import FlagReranker
 
 class RagAssistant:
     """
@@ -17,7 +17,12 @@ class RagAssistant:
         chunk_overlap (int): The overlap between chunks when splitting the document.
     """
 
-    def __init__(self, assistant: Assistant, collection_name: str, directory: str, chunk_size: int, chunk_overlap: int) -> None:
+    def __init__(self, 
+                 assistant: Assistant = None, 
+                 collection_name: str = "collection_name", 
+                 directory: str = "directory", 
+                 chunk_size: int = 1024, 
+                 chunk_overlap: int = 0) -> None:
         """
         Initialize the RAG class.
 
@@ -82,13 +87,21 @@ class RagAssistant:
             list: A list of similar vectors.
         """
         # Get the query vector
-        # query_vector = self.embeddings.embed_query(query)
+        query_vector = self.embeddings.embed_query(query)
 
         # Query the vectorstore
-        # results = self.vectorstore.similarity_search_by_vector(query_vector, k)
-        results = self.vectorstore.similarity_search(query, k)
+        results = self.vectorstore.similarity_search_by_vector(query_vector, k)
+        # results = self.vectorstore.similarity_search(query, k)
 
         return results
+
+    def rerank(self, query: str, query_results):
+        reranker = FlagReranker('BAAI/bge-reranker-base', use_fp16=True)
+        scores = []
+        for document in query_results:
+            score = reranker.compute_score([self.embeddings.embed_query(query), document.page_content])
+            scores.append(score)
+        return scores
 
     def start_rag_chat(self):
             """
@@ -102,8 +115,12 @@ class RagAssistant:
                 prompt = input("Prompt: ")
                 if prompt.lower() == "stop":
                     break
-                result = self.query_vectorstore(query=prompt, k=5)
-                context = self.format_documents(query_results=result)   
+                query_result = self.query_vectorstore(query=prompt, k=10)
+                print(self.rerank(query=prompt, query_results=query_result))
+                context = self.format_documents(query_results=query_result)
+                print()   
+                print()
+                print("AI: ")   
                 for response in self.assistant.generate_response_from_prompt(context=context, prompt=prompt):
                     print(response, end="", flush=True)
                 print()

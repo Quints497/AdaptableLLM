@@ -1,5 +1,5 @@
 import logging
-from src.abstract.base_adapter import BaseAdapter
+from abstract.base_adapter import BaseAdapter
 from llama_cpp import Llama
 
 
@@ -14,7 +14,13 @@ class Adapter(BaseAdapter):
         logger (logging.Logger): Logger for recording adapter operations.
     """
 
-    def __init__(self, model_path: str, n_gpu_layers: int, n_batch: int, n_ctx: int, verbose: bool, prompt_template: str) -> None:
+    def __init__(self, 
+                 model_path: str = "", 
+                 n_gpu_layers: int = 0, 
+                 n_batch: int = 512, 
+                 n_ctx: int = 4096, 
+                 verbose: bool = False, 
+                 prompt_template: str = "<|im_start|>system\n{system_message}\n<|im_end|><|im_start|>user\nContext: {context}\n Prompt: {prompt}\n<|im_end|><|im_start|>assistant") -> None:
         """
         Initializes the Adapter with Llama model parameters and a prompt template.
 
