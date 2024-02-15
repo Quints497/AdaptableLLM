@@ -1,6 +1,7 @@
 from assistant import Assistant
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
+from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
 from FlagEmbedding import FlagReranker
@@ -34,10 +35,9 @@ class RagAssistant:
             chunk_overlap (int): The overlap between consecutive text chunks.
         """
         self.assistant = assistant
-        self.embeddings = HuggingFaceEmbeddings()
+        self.embeddings = HuggingFaceEmbeddings(model_name='llmrails/ember-v1', model_kwargs={'device': 'mps'})
         self.vectorstore = Chroma(collection_name, self.embeddings, directory)
         self.text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-#    retrieval augmented generation
     
     def add_document(self, document: str):
         """
@@ -49,13 +49,8 @@ class RagAssistant:
         Returns:
         None
         """
-        # Load the document
         documents = TextLoader(document).load()
-
-        # Split the document into chunks
         split_documents = self.text_splitter.split_documents(documents)
-
-        # Add the chunks to the vectorstore
         self.vectorstore.add_documents(documents=split_documents)
         print(f"Added {len(split_documents)} documents to the vectorstore.")
 
@@ -86,20 +81,15 @@ class RagAssistant:
         Returns:
             list: A list of similar vectors.
         """
-        # Get the query vector
         query_vector = self.embeddings.embed_query(query)
-
-        # Query the vectorstore
         results = self.vectorstore.similarity_search_by_vector(query_vector, k)
-        # results = self.vectorstore.similarity_search(query, k)
-
         return results
 
     def rerank(self, query: str, query_results):
-        reranker = FlagReranker('BAAI/bge-reranker-base', use_fp16=True)
+        reranker = FlagReranker('BAAI/bge-reranker-large')
         scores = []
         for document in query_results:
-            score = reranker.compute_score([self.embeddings.embed_query(query), document.page_content])
+            score = reranker.compute_score([query, document.page_content])
             scores.append(score)
         return scores
 
@@ -115,13 +105,17 @@ class RagAssistant:
                 prompt = input("Prompt: ")
                 if prompt.lower() == "stop":
                     break
-                query_result = self.query_vectorstore(query=prompt, k=10)
+                query_result = self.query_vectorstore(query=prompt, k=3)
                 print(self.rerank(query=prompt, query_results=query_result))
                 context = self.format_documents(query_results=query_result)
                 print()   
-                print()
-                print("AI: ")   
+                print('-' * 100)
+                output = ""
+                print("AI:", end="")  
                 for response in self.assistant.generate_response_from_prompt(context=context, prompt=prompt):
+                    output += response
+                    if output.strip().lower() == "Fuck off.".strip().lower():
+                        break
                     print(response, end="", flush=True)
                 print()
 

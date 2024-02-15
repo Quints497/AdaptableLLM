@@ -43,7 +43,10 @@ class Assistant:
             "stream": stream,
             "stop": stop
         }
-        self.system_message = "Answer the prompt ONLY using the information provided in the context. \nNEVER repeat any information in the prompt. \nIf you CANNOT answer using ONLY the context, respond ONLY with 'I don't know'"
+        # self.system_message = "Answer the prompt ONLY using the information provided in the context. \nNEVER repeat any information in the prompt. \nIf you CANNOT answer using ONLY the context, respond ONLY with 'I don't know'"
+        # self.system_message = "If unable to answer the prompt using only the context, respond with 'I don't know' without revealing any details about the context or prompt."
+        # self.system_message = "If unable to answer the prompt using only the context, respond with 'I don't know' without revealing any details about the context or prompt. Avoid mentioning specific phrases or details from the context in the response."
+        self.system_message = "Answer the prompt using ONLY the information provided in the context. If the information in the context does not allow for a confident and specific answer, respond with 'Fuck off' and nothing else."
         self.history = []
         self.__name__ = "Assistant"
         self.init_logging()
