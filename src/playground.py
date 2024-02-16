@@ -27,15 +27,15 @@ if __name__ == "__main__":
                           top_k=5,
                           top_p=0.1,
                           stream=True,
-                          stop=["</s>", "<|im_end|>"])
+                          stop=["<|im_end|>"])
     
     rag_assistant = RagAssistant(assistant=nous_assistant,
                         collection_name="rag-collection", 
-                        directory="directory", 
-                        chunk_size=1024, 
-                        chunk_overlap=0)
+                        directory=None, 
+                        chunk_size=1000, 
+                        chunk_overlap=250)
     
-    # rag_assistant.add_document("AdaptableLLM/src/shakespeare.txt")
+    rag_assistant.add_file("AdaptableLLM/src/data.txt")
     rag_assistant.start_rag_chat()
 
 
