@@ -1,7 +1,6 @@
 from assistant import Assistant
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
-from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
 from FlagEmbedding import FlagReranker
@@ -142,24 +141,27 @@ class RagAssistant:
         The session continues until the user inputs "stop".
         """
         while True:
-            prompt = input("Prompt: ")
-            if prompt.lower() == "stop":
+            query = input("Prompt: ")
+            if query.strip().lower() == "stop": 
                 break
-            query_result = self.query_vectorstore(query=prompt, k=10)
-            reranked_results = self.rerank(query=prompt, query_results=query_result, j=3)
-            context = self.format_documents(query_results=reranked_results)
-            if context == "":
+            query_results = self.rerank(query=query, query_results=self.query_vectorstore(query=query, k=10), j=3)
+            context = self.format_documents(query_results=query_results)
+            if not context:
                 print("No documents found.")
+                self.assistant.gather_statistics({"prompt": query, "output": "No documents found."})
                 continue
-            self.show_changes(reranked_results)
-            print()   
-            print('-' * 100)
-            output = ""
-            print("AI: ", end="")  
-            for response in self.assistant.generate_response_from_prompt(context=context, prompt=prompt):
-                print(response, end="", flush=True)
-                output += response
-                if output.strip().lower() == "I don't know.".strip().lower():
-                    break
-            self.assistant.gather_statistics({"prompt": prompt, "output": output})
-            print()
+            else:
+                self.show_changes(query_results)
+                print()
+                print('-' * 100)
+                print("AI: ", end="")
+                output = ""
+                for response in self.assistant.generate_response_from_prompt(context=context, query=query):
+                    print(response, end="", flush=True)
+                    output += response
+                    if output.strip().lower() == "I don't know.".strip().lower(): 
+                        break
+                print()
+                self.assistant.gather_statistics({"prompt": query, "output": output})
+        self.assistant.export_statistics("rag-chat-history.json")
+        print("Chat history exported to rag-chat-history.json.")

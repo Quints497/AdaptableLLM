@@ -1,6 +1,7 @@
+from adapter import Adapter
 from datetime import datetime
 import logging
-from adapter import Adapter
+import json
 
 
 class Assistant:
@@ -78,7 +79,21 @@ class Assistant:
         self.logger.info(f"Assistant: {messages['output']}")
         self.history.append(messages)
 
-    def generate_response_from_prompt(self, context: str, prompt: str):
+    def export_statistics(self, filename: str):
+        """
+        Exports the chat history to a file.
+
+        Args:
+            filename (str): The name of the file to export the chat history to.
+        """
+        with open(filename, "w") as file:
+            json.dump(self.history, file, indent=4)
+        # with open(filename, "w") as file:
+        #     for interaction in self.history:
+        #         file.write(f"User: {interaction['prompt']}\n")
+        #         file.write(f"Assistant: {interaction['output']}\n")
+
+    def generate_response_from_prompt(self, context: str, query: str):
         """
         Generates a response for a given user prompt using the adapter.
 
@@ -88,7 +103,7 @@ class Assistant:
         Returns:
             list: Generated responses.
         """
-        formatted_prompt = self.adapter.prompt_format(system_message=self.system_message, context=context, prompt=prompt)
+        formatted_prompt = self.adapter.prompt_format(system_message=self.system_message, context=context, prompt=query)
         output = self.adapter.invoke(prompt=formatted_prompt, **self.parameters)
         return self.adapter.parse_response(output=output)
 
@@ -100,7 +115,7 @@ class Assistant:
             prompt (str): The user's input.
         """
         output = ""
-        for response in self.generate_response_from_prompt(prompt=prompt):
+        for response in self.generate_response_from_prompt(query=prompt):
             print(response, end="", flush=True)
             output += response
         print()
