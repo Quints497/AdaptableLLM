@@ -1,7 +1,6 @@
 from adapter import Adapter
 from assistant import Assistant
 from rag_assistant import RagAssistant
-
 from dotenv import load_dotenv
 import os
 
@@ -13,33 +12,31 @@ if __name__ == "__main__":
     mixtral_model_path = os.getenv("MIXTRAL_MODEL_PATH")
     mistral_model_path = os.getenv("MISTRAL_MODEL_PATH")
     nous_model_path = os.getenv("NOUS_MODEL_PATH")
-    # mistral_model_path = "mistral-7b-instruct-v0.2.Q6_K.gguf"
+    mistral_model_path = "AdaptableLLM/src/mistral-7b-instruct-v0.2.Q6_K.gguf"
 
-    nous_adapter = Adapter(model_path=nous_model_path, 
-                        n_gpu_layers=-1, 
+    mistral_adapter = Adapter(model_path=mistral_model_path, 
+                        n_gpu_layers=0, 
                         n_batch=512, 
                         n_ctx=4096, 
                         verbose=False,)
     
-    nous_assistant = Assistant(adapter=nous_adapter,
+    mistral_assistant = Assistant(adapter=mistral_adapter,
                           max_tokens=2048,
                           temperature=0,
                           top_k=5,
                           top_p=0.1,
                           stream=True,
-                          stop=["<|im_end|>"])
+                          stop=["<|im_end|>", "<|im_start|>"])
     
-    rag_assistant = RagAssistant(assistant=nous_assistant,
+    rag_assistant = RagAssistant(assistant=mistral_assistant,
                         collection_name="rag-collection", 
                         directory=None, 
                         chunk_size=1000, 
                         chunk_overlap=250)
     
-    rag_assistant.add_file("AdaptableLLM/src/data.txt")
-    rag_assistant.start_rag_chat()
-
-
-
+    # rag_assistant.add_file("AdaptableLLM/src/data.txt")
+    # rag_assistant.start_rag_chat()
+    
     # query = "When forty winters shall"
     # results = rag_assistant.query_vectorstore(query, 10)
     # rag_assistant.format_documents(results)

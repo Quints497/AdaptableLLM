@@ -1,9 +1,12 @@
 from assistant import Assistant
 from langchain.text_splitter import CharacterTextSplitter
+from langchain_core.documents import Document
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
 from FlagEmbedding import FlagReranker
+from scoring_responses import score_responses
+
 
 class RagAssistant:
     """
@@ -40,7 +43,7 @@ class RagAssistant:
         self.vectorstore = Chroma(collection_name, self.embeddings, directory)
         self.text_splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     
-    def add_file(self, file: str):
+    def add_file(self, file: str) -> None:
         """
         Incorporates a new file into the vector store by segmenting it into chunks, embedding these chunks, and storing the resulting vectors.
 
@@ -55,7 +58,7 @@ class RagAssistant:
         self.vectorstore.add_documents(documents=split_documents)
         print(f"Added {len(split_documents)} documents to the vectorstore.")
 
-    def format_documents(self, query_results) -> list:
+    def format_documents(self, query_results) -> str:
         """
         Formats retrieved documents from query results for display or further processing.
 
@@ -71,7 +74,7 @@ class RagAssistant:
         print(formatted_documents)
         return formatted_documents
 
-    def query_vectorstore(self, query: str, k: int):
+    def query_vectorstore(self, query: str, k: int) -> list[Document]:
         """
         Executes a similarity search in the vector store using the query's embedded representation to retrieve related documents.
 
@@ -86,7 +89,7 @@ class RagAssistant:
         results = self.vectorstore.similarity_search_by_vector(query_vector, k)
         return results
 
-    def rerank(self, query: str, query_results, j: int):
+    def rerank(self, query: str, query_results: list[Document], j: int) -> list[dict]:
         """
         Re-ranks the initially retrieved documents based on a more sophisticated relevance assessment, potentially using additional models or criteria.
 
@@ -115,7 +118,7 @@ class RagAssistant:
         chosen_ranked_results = [item for item in reranked_results[:j] if item['score'] > 0]
         return chosen_ranked_results
 
-    def show_changes(self, reranked_results: list[dict], j: int = 3):
+    def show_changes(self, reranked_results: list[dict]) -> None:
         """
         Displays the effect of re-ranking on the order and selection of documents.
 
@@ -126,6 +129,9 @@ class RagAssistant:
         Prints:
             A comparison between the original and new rankings of documents, along with their scores.
         """
+        print()
+        print('-' * 100)
+        print()
         print(f"Original order \t\t\t   Sorted order \t\t\t  Score")
         for item in reranked_results:
             original_index = item['original_index']
@@ -134,34 +140,39 @@ class RagAssistant:
             print(f"\t{original_index} \t\t->\t\t {sorted_index} \t\t---\t\t  {sorted_score:.2f} \t (Chosen)")
 
 
-    def start_rag_chat(self):
+    def start_rag_chat(self) -> None:
         """
         Initiates an interactive chat session that uses RAG for generating responses. The user inputs queries, and the system provides answers based on both retrieved documents and generative capabilities of the assistant.
 
         The session continues until the user inputs "stop".
         """
         while True:
-            query = input("Prompt: ")
+            query = input("Query: ")
             if query.strip().lower() == "stop": 
                 break
-            query_results = self.rerank(query=query, query_results=self.query_vectorstore(query=query, k=10), j=3)
-            context = self.format_documents(query_results=query_results)
+            query_results = self.query_vectorstore(query=query, k=10)
+            reranked_results = self.rerank(query=query, query_results=query_results, j=3)
+            context = self.format_documents(query_results=reranked_results)
             if not context:
                 print("No documents found.")
-                self.assistant.gather_statistics({"prompt": query, "output": "No documents found."})
+                self.assistant.gather_statistics({"query": query, "output": "No documents found."})
                 continue
             else:
-                self.show_changes(query_results)
+                self.show_changes(reranked_results)
                 print()
                 print('-' * 100)
                 print("AI: ", end="")
                 output = ""
-                for response in self.assistant.generate_response_from_prompt(context=context, query=query):
+                for response in self.assistant.generate_response_from_query(context=context, query=query):
+                    if response in ["", "\n"]:
+                        continue
                     print(response, end="", flush=True)
                     output += response
                     if output.strip().lower() == "I don't know.".strip().lower(): 
                         break
                 print()
-                self.assistant.gather_statistics({"prompt": query, "output": output})
+                self.assistant.gather_statistics({"query": query, "output": output})
         self.assistant.export_statistics("rag-chat-history.json")
         print("Chat history exported to rag-chat-history.json.")
+        score_responses()
+        print("The scored Chat history has been exported to scored-rag-chat-history.json.")

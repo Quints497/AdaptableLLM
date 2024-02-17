@@ -1,6 +1,5 @@
 from adapter import Adapter
-from datetime import datetime
-import logging
+from collections.abc import Generator
 import json
 
 
@@ -23,7 +22,7 @@ class Assistant:
                  top_k: int = 10,
                  top_p: float = 0.1, 
                  stream: bool = True, 
-                 stop: list = ["<|im_end|>"]) -> None:
+                 stop: list = ["<|im_end|>", "<|im_start|>"]) -> None:
         """
         Initializes the Assistant with a response generation adapter and configuration parameters.
 
@@ -46,40 +45,18 @@ class Assistant:
         }
         self.system_message = "Use the provided context to answer questions. If the answer cannot be found in the context, write 'I don't know.'"
         self.history = []
-        self.__name__ = "Assistant"
-        self.init_logging()
 
-    def init_logging(self):
+
+    def gather_statistics(self, messages: dict) -> None:
         """
-        Sets up logging configuration with a file handler and specific formatter.
-        """
-        self.logger = logging.getLogger("Assistant-Logger")
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(f"{__name__}-{self.__name__}.log")
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-
-        # Check to prevent adding duplicate handlers
-        if not self.logger.hasHandlers():
-            self.logger.addHandler(handler)
-
-    def update_system_message(self, message: str):
-        # Update the system message for the assistant
-        self.system_message = message
-
-    def gather_statistics(self, messages: dict):
-        """
-        Logs user and assistant messages to the logger and updates the chat history.
+        Updates the chat history.
 
         Args:
-            messages (dict): Dictionary containing 'prompt' (user input) and 'output' (assistant's response).
+            messages (dict): Dictionary containing 'query' (user input) and 'output' (assistant's response).
         """
-        self.logger.info(f"User: {messages['prompt']}")
-        self.logger.info(f"Assistant: {messages['output']}")
         self.history.append(messages)
 
-    def export_statistics(self, filename: str):
+    def export_statistics(self, filename: str) -> None:
         """
         Exports the chat history to a file.
 
@@ -88,26 +65,23 @@ class Assistant:
         """
         with open(filename, "w") as file:
             json.dump(self.history, file, indent=4)
-        # with open(filename, "w") as file:
-        #     for interaction in self.history:
-        #         file.write(f"User: {interaction['prompt']}\n")
-        #         file.write(f"Assistant: {interaction['output']}\n")
 
-    def generate_response_from_prompt(self, context: str, query: str):
+
+    def generate_response_from_query(self, context: str, query: str) -> Generator[any, any, None]:
         """
-        Generates a response for a given user prompt using the adapter.
+        Generates a response for a given user query using the adapter.
 
         Args:
-            prompt (str): The user's prompt.
+            query (str): The user's query.
 
         Returns:
             list: Generated responses.
         """
-        formatted_prompt = self.adapter.prompt_format(system_message=self.system_message, context=context, prompt=query)
+        formatted_prompt = self.adapter.prompt_format(system_message=self.system_message, context=context, query=query)
         output = self.adapter.invoke(prompt=formatted_prompt, **self.parameters)
         return self.adapter.parse_response(output=output)
 
-    def handle_input(self, prompt: str):
+    def handle_input(self, query: str) -> None:
         """
         Processes user input by generating a response, printing it, and logging the interaction.
 
@@ -115,31 +89,22 @@ class Assistant:
             prompt (str): The user's input.
         """
         output = ""
-        for response in self.generate_response_from_prompt(query=prompt):
+        for response in self.generate_response_from_query(query=query):
             print(response, end="", flush=True)
             output += response
         print()
-        self.gather_statistics({"prompt": prompt, "output": output})
+        self.gather_statistics({"query": query, "output": output})
 
-    def timestamp(self):
-        """
-        Returns the current timestamp in 'HH:MM:SS' format.
-
-        Returns:
-            str: The current timestamp.
-        """
-        return datetime.now().strftime('%H:%M:%S')
-
-    def start_chat(self):
+    def start_chat(self) -> None:
         """
         Initiates the chat loop, processing user input and generating responses until an exit command is issued.
         """
         while True:
-            prompt = input(f"{self.timestamp()} - User: ")
+            prompt = input("User: ")
             if prompt.lower() in ["exit", "goodbye"]:
                 print("Assistant: Goodbye!")
                 self.logger.info("Chat ended.")
                 break
 
-            print(f"{self.timestamp()} - Assistant: ", end="")
-            self.handle_input(prompt=prompt)
+            print("Assistant: ", end="")
+            self.handle_input(query=prompt)

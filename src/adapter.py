@@ -1,9 +1,8 @@
-import logging
-from abstract.base_adapter import BaseAdapter
-from llama_cpp import Llama
+from collections.abc import Generator, Iterator
+from llama_cpp import CreateCompletionStreamResponse, Llama
 
 
-class Adapter(BaseAdapter):
+class Adapter:
     """
     Adapter class that interfaces with the Llama model for generating responses based on provided prompts.
 
@@ -20,7 +19,7 @@ class Adapter(BaseAdapter):
                  n_batch: int = 512, 
                  n_ctx: int = 4096, 
                  verbose: bool = False, 
-                 prompt_template: str = "<|im_start|>system\n{system_message}\n<|im_end|><|im_start|>user\nContext: {context}\n Prompt: {prompt}\n<|im_end|><|im_start|>assistant") -> None:
+                 prompt_template: str = "<|im_start|>system\n{system_message}\n<|im_end|><|im_start|>user\nContext: {context}\n\nQuery: {query}\n<|im_end|><|im_start|>assistant") -> None:
         """
         Initializes the Adapter with Llama model parameters and a prompt template.
 
@@ -34,26 +33,8 @@ class Adapter(BaseAdapter):
         """
         self.llm = Llama(model_path=model_path, n_gpu_layers=n_gpu_layers, n_batch=n_batch, n_ctx=n_ctx, verbose=verbose)
         self.prompt_template = prompt_template
-        self.generating = False
-        self.__name__ = "Adapter"
-        self.init_logging()
 
-    def init_logging(self) -> None:
-        """
-        Sets up logging configuration for the adapter, including file handlers and formatting.
-        """
-        self.logger = logging.getLogger("Adapter-Logger")
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(f"{__name__}-{self.__name__}.log")
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-
-        # Prevent adding duplicate handlers
-        if not self.logger.hasHandlers():
-            self.logger.addHandler(handler)
-
-    def invoke(self, prompt: str, **parameters):
+    def invoke(self, prompt: str, **parameters) -> Iterator[CreateCompletionStreamResponse]:
         """
         Generates a response from the Llama model based on the input prompt and additional parameters.
 
@@ -64,14 +45,9 @@ class Adapter(BaseAdapter):
         Returns:
             Generator: The generated response from the model.
         """
-        self.generating = True
-        self.logger.info(f"Generating: {self.generating}")
-        output = self.llm(prompt, **parameters)
-        self.generating = False
-        self.logger.info(f"Generating: {self.generating}")
-        return output
+        return self.llm(prompt, **parameters)
 
-    def prompt_format(self, system_message: str, context: str, prompt: str) -> str:
+    def prompt_format(self, system_message: str, context: str, query: str) -> str:
         """
         Formats the input prompt using the predefined template.
 
@@ -81,9 +57,9 @@ class Adapter(BaseAdapter):
         Returns:
             str: Formatted prompt ready for model processing.
         """
-        return self.prompt_template.format(system_message=system_message, context=context, prompt=prompt)
+        return self.prompt_template.format(system_message=system_message, context=context, query=query)
 
-    def parse_response(self, output):
+    def parse_response(self, output: Iterator[CreateCompletionStreamResponse]) -> Generator[any, any, None]:
         """
         Parses and yields each chunk of the generated response.
 

@@ -4,7 +4,6 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_core.documents.base import Document
 from FlagEmbedding import FlagReranker
-from pprint import pprint
 
 embeddings = HuggingFaceEmbeddings(model_name='llmrails/ember-v1', model_kwargs={'device': 'mps'})
 vectorstore = Chroma(collection_name="testing", embedding_function=embeddings)
