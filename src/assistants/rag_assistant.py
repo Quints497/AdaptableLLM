@@ -1,11 +1,11 @@
-from assistant import Assistant
+from adaptable.AdaptableLLM.src.assistants.assistant import Assistant
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
 from FlagEmbedding import FlagReranker
-from scoring_responses import score_responses
+from adaptable.AdaptableLLM.src.helpers.scoring_responses import score_responses
 
 
 class RagAssistant:

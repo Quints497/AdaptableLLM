@@ -19,7 +19,7 @@ class Adapter:
                  n_batch: int = 512, 
                  n_ctx: int = 4096, 
                  verbose: bool = False, 
-                 prompt_template: str = "<|im_start|>system\n{system_message}\n<|im_end|><|im_start|>user\nContext: {context}\n\nQuery: {query}\n<|im_end|><|im_start|>assistant") -> None:
+                 prompt_template: str = "<|im_start|>system\n{system_message}\n<|im_end|><|im_start|>user\nQuery: {query}\n<|im_end|><|im_start|>assistant") -> None:
         """
         Initializes the Adapter with Llama model parameters and a prompt template.
 
@@ -34,7 +34,7 @@ class Adapter:
         self.llm = Llama(model_path=model_path, n_gpu_layers=n_gpu_layers, n_batch=n_batch, n_ctx=n_ctx, verbose=verbose)
         self.prompt_template = prompt_template
 
-    def invoke(self, prompt: str, **parameters) -> Iterator[CreateCompletionStreamResponse]:
+    def invoke(self, prompt: str, **parameters: dict[str, any]) -> Iterator[CreateCompletionStreamResponse]:
         """
         Generates a response from the Llama model based on the input prompt and additional parameters.
 
@@ -47,7 +47,7 @@ class Adapter:
         """
         return self.llm(prompt, **parameters)
 
-    def prompt_format(self, system_message: str, context: str, query: str) -> str:
+    def prompt_format(self, system_message: str, query: str) -> str:
         """
         Formats the input prompt using the predefined template.
 
@@ -57,7 +57,7 @@ class Adapter:
         Returns:
             str: Formatted prompt ready for model processing.
         """
-        return self.prompt_template.format(system_message=system_message, context=context, query=query)
+        return self.prompt_template.format(system_message=system_message, query=query)
 
     def parse_response(self, output: Iterator[CreateCompletionStreamResponse]) -> Generator[any, any, None]:
         """

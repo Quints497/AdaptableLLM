@@ -1,11 +1,5 @@
-config.env
-assistantAi-Assistant.log
-adapterAi-YiAdapter.log
-adapterAi-LLM-Adapter.log
-src/__pycache__
-src/abstract/__pycache__
-directory
-J. K. Rowling - Harry Potter 1 - Sorcerer's Stone.txt
-src.adapter-Adapter.log
-src.assistant-Assistant.log
-AdaptableLLM/src/shakespeare.txt
+__pycache__*
+*.log
+testing
+data
+.env
