@@ -1,11 +1,12 @@
-from adaptable.AdaptableLLM.src.assistants.assistant import Assistant
+from FlagEmbedding import FlagReranker
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_core.documents import Document
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
-from FlagEmbedding import FlagReranker
-from adaptable.AdaptableLLM.src.helpers.scoring_responses import score_responses
+from langchain_core.documents import Document
+
+from assistants.assistant import Assistant
+from helpers.scoring_responses import score_responses
 
 
 class RagAssistant:
@@ -146,6 +147,8 @@ class RagAssistant:
 
         The session continues until the user inputs "stop".
         """
+        # TODO: Implement the chat loop for the RAG assistant
+        # FIX: generate_response_from_query() -> missing argument 'context'
         while True:
             query = input("Query: ")
             if query.strip().lower() == "stop": 

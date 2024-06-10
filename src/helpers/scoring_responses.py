@@ -1,10 +1,12 @@
 # To implement a grading algorithm based on cosine similarity, we first need to prepare text representations
 # of both the expected (ideal) responses and the actual responses, and then calculate the similarity between them.
 
+import json
+
+import numpy as np
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-import json
+
 
 def score_responses():
     ideal_file = "testing-rag.json"

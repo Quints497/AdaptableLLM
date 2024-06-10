@@ -1,7 +1,10 @@
-from adaptable.AdaptableLLM.src.adapters.adapter import Adapter
-from collections.abc import Generator
 import json
+from collections.abc import Generator
+
 import gradio as gr
+
+from adapters.adapter import Adapter
+
 
 class Assistant:
     """
