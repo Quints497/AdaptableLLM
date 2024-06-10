@@ -6,23 +6,27 @@ This project implements an AI assistant capable of generating and scoring respon
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Project Structure](#project-structure)
 - [Files](#files)
+- [Dependencies](#dependencies)
 
 ## Installation
 
-1. Clone the repository:
+1. **Clone the repository**:
 
     ```bash
     git clone https://github.com/Quints497/generative-assistants.git
-    ```
-
-2. Navigate to the project directory:
-
-    ```bash
     cd generative-assistants
     ```
 
-3. Install the required dependencies:
+2. **Create and activate a virtual environment** (optional but recommended):
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   ```
+
+3. **Install the required dependencies**:
 
     ```bash
     pip install -r requirements.txt
@@ -34,12 +38,13 @@ This project implements an AI assistant capable of generating and scoring respon
 
 Ensure you have a `.env` file in the project directory with the necessary environment variables:
 
-- `YI_MODEL_PATH`
-- `MIXTRAL_MODEL_PATH`
-- `MISTRAL_MODEL_PATH`
-- `NOUS_MODEL_PATH`
+- Add these path to your model in the `.env` file:
+  - `YI_MODEL_PATH`
+  - `MIXTRAL_MODEL_PATH`
+  - `MISTRAL_MODEL_PATH`
+  - `NOUS_MODEL_PATH`
 
-### Running the Scripts
+### Example Usage
 
 Here is an example of how you can set up and use the different components of the project:
 
@@ -87,6 +92,26 @@ Here is an example of how you can set up and use the different components of the
     nous_assistant.gradio_chat()
     ```
 
+## Project Structure
+
+```raw
+generative-assistants/
+├── src/
+│   ├── __init__.py
+│   ├── adapters/
+│   │   └── adapter.py
+│   ├── assistants/
+│   │   ├── assistant.py
+│   │   └── rag_assistant.py
+│   └── helpers/
+│       └── scoring_responses.py
+├── venv/
+├── .env
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
+
 ## Files
 
 ### adapter.py
@@ -104,3 +129,15 @@ This script defines the `RagAssistant` class, which integrates a Retrieval-Augme
 ### scoring_responses.py
 
 This script implements a grading algorithm based on cosine similarity. It prepares text representations of both the expected (ideal) responses and the actual responses, then calculates the similarity between them. This is useful for evaluating the quality of generated responses.
+
+## Dependencies
+
+- `llama-cpp-python`
+- `python-dotenv`
+- `gradio`
+- `FlagEmbedding` *
+- `langchain_core` *
+- `langchain_community` *
+- `chromadb` *
+
+`*` Required by rag assistant only
