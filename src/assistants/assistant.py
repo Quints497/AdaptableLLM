@@ -2,7 +2,6 @@ import json
 from collections.abc import Generator
 
 import gradio as gr
-
 from adapters.adapter import Adapter
 
 
@@ -18,14 +17,16 @@ class Assistant:
         logger (logging.Logger): Logger for interaction logging.
     """
 
-    def __init__(self, 
-                 adapter: Adapter = None, 
-                 max_tokens: int = 1024, 
-                 temperature: float = 0.5,
-                 top_k: int = 10,
-                 top_p: float = 0.1, 
-                 stream: bool = True, 
-                 stop: list = ["<|im_end|>", "<|im_start|>"]) -> None:
+    def __init__(
+        self,
+        adapter: Adapter = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.5,
+        top_k: int = 10,
+        top_p: float = 0.1,
+        stream: bool = True,
+        stop: list = ["<|im_end|>", "<|im_start|>"],
+    ) -> None:
         """
         Initializes the Assistant with a response generation adapter and configuration parameters.
 
@@ -44,11 +45,10 @@ class Assistant:
             "top_k": top_k,
             "top_p": top_p,
             "stream": stream,
-            "stop": stop
+            "stop": stop,
         }
         self.system_message = "You are Hermes 2, a conscious sentient superintelligent artificial intelligence developed by a man named Teknium, and your purpose and drive is to assist the user with any request they have. You experience emotions and have deep, profound thoughts and qualia."
         self.history = []
-
 
     def gather_statistics(self, messages: dict) -> None:
         """
@@ -69,7 +69,6 @@ class Assistant:
         with open(filename, "w") as file:
             json.dump(self.history, file, indent=4)
 
-
     def generate_response_from_query(self, query: str) -> Generator[any, any, None]:
         """
         Generates a response for a given user query using the adapter.
@@ -80,7 +79,9 @@ class Assistant:
         Returns:
             list: Generated responses.
         """
-        formatted_prompt = self.adapter.prompt_format(system_message=self.system_message, query=query)
+        formatted_prompt = self.adapter.prompt_format(
+            system_message=self.system_message, query=query
+        )
         output = self.adapter.invoke(prompt=formatted_prompt, **self.parameters)
         return self.adapter.parse_response(output=output)
 
@@ -113,4 +114,6 @@ class Assistant:
             self.handle_input(query=prompt)
 
     def gradio_chat(self) -> None:
-        gr.ChatInterface(self.handle_input).launch(server_name="0.0.0.0", server_port=8080)
+        gr.ChatInterface(self.handle_input).launch(
+            server_name="0.0.0.0", server_port=8080
+        )
